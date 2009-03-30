@@ -1,24 +1,23 @@
 #!/usr/bin/env python
 from __future__ import with_statement
 
-import contextlib
-import fnmatch
 import os
 import re
-import subprocess
 import sys
+import fnmatch
+import functools
+import contextlib
+import subprocess
 from cStringIO import StringIO
 
-VCS = ('svn', 'git')
-
 # Not using re.VERBOSE because we need to match a '#' for git.
-RE = {'svn': "^(?:A|M)\s+" # Find Added or Modified files.
-             "(.*)$",      # Store the rest of the line (the filepath).
+VCS = {'svn': "^(?:A|M)\s+" # Find Added or Modified files.
+              "(.*)$",      # Store the rest of the line (the filepath).
 
-      'git': "^#\s+"       # The line starts with an octothorpe and whitespace.
-             "(?:new file|modified):\s+"  # Look for new/modified files.
-             "(.*)$",      #  Store the rest of the line (the filepath).
-      }
+       'git': "^#\s+"     # The line starts with an octothorpe and whitespace.
+              "(?:new file|modified):\s+"  # Look for new/modified files.
+              "(.*)$",    #  Store the rest of the line (the filepath).
+       }
 
 
 @contextlib.contextmanager
@@ -34,16 +33,17 @@ def captured_output():
 
 
 checkers = []
-def checker(glob):
+def checker(include='*', exclude=''):
     """Decorator to register `func` in `checkers` and normalize output."""
     def decorator(func):
+        @functools.wraps(func)
         def helper(files):
-            matching_files = dict((k, v) for k, v in files.iteritems()
-                                  if fnmatch.fnmatch(k, glob))
-            if not matching_files:
+            files = fnmatch.filter(files, include)
+            files = [f for f in files if not fnmatch.fnmatch(f, exclude)]
+            if not files:
                 return
             with captured_output() as stream:
-                func(matching_files)
+                func(files)
                 stream.seek(0)
                 output = stream.read()
             if output.strip():
@@ -69,39 +69,31 @@ def which_vcs():
 
 def interesting_files(vcs):
     """Return a list of added or modified files."""
-    if vcs in VCS:
-        out = call([vcs, 'status'])
-        out = out.splitlines()
-        r = re.compile(RE[vcs])
-        return [m[0] for m in filter(None, map(r.findall, out))]
-    else:
-        raise Exception("Unsupported vcs %s." % vcs)
+    out = call([vcs, 'status']).splitlines()
+    r = re.compile(VCS[vcs])
+    return [m[0] for m in filter(None, map(r.findall, out))]
 
 
 def call(seq):
     """Use Popen to execute `seq` and return stdout."""
-    proc = subprocess.Popen(seq, stdout=subprocess.PIPE)
-    return proc.communicate()[0]
-
-
-def pyfiles(files):
-    return [f for f in files.keys() if f.endswith('.py')]
+    return subprocess.Popen(seq, stdout=subprocess.PIPE).communicate()[0]
 
 
 @checker('*.py')
 def pyflakes(files):
-    print call(['pyflakes'] + files.keys())
+    print call(['pyflakes'] + files)
 
 
 @checker('*.py')
 def pep8(files):
-    print call(['pep8.py', '--repeat'] + files.keys())
+    print call(['pep8.py', '--repeat'] + files)
 
 
-@checker('*')
+@checker(exclude='*.py')
 def trailing_whitespace(files):
     r = re.compile('\s+$')
-    for filename, content in files.iteritems():
+    for filename in files:
+        content = open(filename).read()
         for idx, line in enumerate(content.splitlines()):
             if r.search(line):
                 print '%s:%d: trailing whitespace' % (filename, idx + 1)
@@ -130,10 +122,8 @@ def _main():
             else:
                 files.append(file)
 
-    d = dict((filename, open(filename).read()) for filename in files
-             if os.path.isfile(filename))
     for checker in checkers:
-        checker(d)
+        checker(filter(os.path.isfile, files))
 
 if __name__ == '__main__':
     _main()
