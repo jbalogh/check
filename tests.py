@@ -3,7 +3,7 @@ from __future__ import with_statement
 import sys
 
 from nose.tools import assert_raises
-from mock import patch
+from mock import patch, Mock
 
 import check
 
@@ -96,3 +96,44 @@ def test_trailing_whitespace(open_mock):
 
     for n in 2, 3:
         assert output.readline() == '%s:%s: trailing whitespace\n' % ('foo', n)
+
+
+@patch('check.interesting_files')
+@patch('check.sys')
+@patch('check.os')
+@patch('check.which_vcs')
+@patch('check.checkers')
+def test_main(files_mock, sys_mock, *args):
+    # So the checkers mock supports iteration.
+    mock = Mock()
+    Mock.__iter__ = lambda *args: iter([mock])
+
+    files = ['foo', 'bar']
+    files_mock.return_value = files
+    sys_mock.argv = [Mock()]
+
+    check._main()
+
+    mock.assert_called_with(files)
+
+
+@patch('check.sys')
+@patch('check.path.isfile')
+@patch('check.path.walkfiles')
+@patch('check.os')
+@patch('check.checkers')
+def test_main_with_args(sys_mock, isfile_mock, walkfiles_mock, *args):
+    # So the checkers mock supports iteration.
+    mock = Mock()
+    Mock.__iter__ = lambda *args: iter([mock])
+
+    sys_mock.argv = ['./check', 'foo', 'bar']
+    isfile_mock.return_value = True
+    check._main()
+    mock.assert_called_with(['foo', 'bar'])
+
+    mock.reset()
+    isfile_mock.return_value = False
+    walkfiles_mock.return_value = ['bar~', 'bla.py']
+    check._main()
+    mock.assert_called_with(['bla.py'])
