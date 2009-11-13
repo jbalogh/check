@@ -91,7 +91,7 @@ def pyflakes(files):
 
 @checker('*.py')
 def pep8(files):
-    print call(['pep8.py', '--repeat'] + files)
+    print call(['pep8', '--repeat'] + files)
 
 
 @checker(exclude='*.py')
