@@ -11,8 +11,7 @@ This module requires Python 2.2 or later.
 
 
 URL:     http://www.jorendorff.com/articles/python/path
-Author:  Jason Orendorff <jason.orendorff\x40gmail\x2ecom>
-         (and others - see the url!)
+Author:  Jason Orendorff <jason.orendorff\x40gmail\x2ecom> (and others - see the url!)
 Date:    9 Mar 2007
 """
 
@@ -30,14 +29,13 @@ Date:    9 Mar 2007
 
 from __future__ import generators
 
-import os
-import md5
-import sys
-import glob
-import codecs
-import shutil
-import fnmatch
-import warnings
+import sys, warnings, os, fnmatch, glob, shutil, codecs
+
+try:
+    import hashlib as md5
+    md5.new = md5.md5
+except ImportError:
+    import md5
 
 __version__ = '2.2'
 __all__ = ['path']
@@ -84,7 +82,6 @@ if hasattr(file, 'newlines'):
 
 class TreeWalkWarning(Warning):
     pass
-
 
 class path(_base):
     """ Represents a filesystem path.
@@ -976,3 +973,4 @@ class path(_base):
     if hasattr(os, 'startfile'):
         def startfile(self):
             os.startfile(self)
+
