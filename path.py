@@ -7,7 +7,7 @@ d = path('/home/guido/bin')
 for f in d.files('*.py'):
     f.chmod(0755)
 
-This module requires Python 2.2 or later.
+This module requires Python 2.6 or later.
 
 
 URL:     http://www.jorendorff.com/articles/python/path
@@ -31,13 +31,9 @@ from __future__ import generators
 
 import sys, warnings, os, fnmatch, glob, shutil, codecs
 
-try:
-    import hashlib as md5
-    md5.new = md5.md5
-except ImportError:
-    import md5
+import hashlib
 
-__version__ = '2.2'
+__version__ = '2.3a'
 __all__ = ['path']
 
 # Platform-specific support for path.owner
@@ -773,7 +769,7 @@ class path(_base):
         """
         f = self.open('rb')
         try:
-            m = md5.new()
+            m = hashlib.md5()
             while True:
                 d = f.read(8192)
                 if not d:
