@@ -104,6 +104,14 @@ def trailing_whitespace(files):
                 print '%s:%d: trailing whitespace' % (filename, idx + 1)
 
 
+@checker('*.js')
+def jshint(files):
+    try:
+        print call(['jshint'] + files)
+    except OSError:
+        print 'jshint not installed for js checking'
+
+
 def _main():
     if len(sys.argv) == 1:
         # If there are no arguments, figure out what to do based on VCS
