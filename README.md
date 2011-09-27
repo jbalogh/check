@@ -1,6 +1,7 @@
-Runs `pyflakes` & `pep8.py` on your Python files and a trailing whitespace
-checker on all the rest.  Keeps anal-retentive style nazis like me happy, and
-should (in theory) make your code look nicer.
+Runs `pyflakes`, `pep8.py` on your Python files. Runs `jshint` on your
+Javascript and a trailing whitespace checker on all the rest.  Keeps
+anal-retentive style nazis like me happy, and should (in theory) make
+your code look nicer.
 
 #### How to use it
 
@@ -17,3 +18,7 @@ This will run checks on `models.py` and any files found recursively in the
 #### Installation
 
 Best installed with pip or easy_install so you also get the pyflakes dependency.
+
+The easiest way to get jshint installed is via npm:
+
+    npm install -g jshint
