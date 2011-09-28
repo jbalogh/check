@@ -28,7 +28,7 @@ This is useful as a git pre-commit hook.  For example, this would go in your
     check.py
     if [ "$?" -ne "0" ]
     then
-        echo "Aborting commit.  Fix above errors or do 'git commit -no-verify'."
+        echo "Aborting commit.  Fix above errors or do 'git commit --no-verify'."
         exit 1
     fi
 

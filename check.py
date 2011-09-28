@@ -92,7 +92,6 @@ def pep8(files):
 
 @checker(exclude='*.py')
 def trailing_whitespace(files):
-    print "trailing whitespace", files
     output = []
     r = re.compile('\s+$')
     for filename in files:
@@ -100,7 +99,7 @@ def trailing_whitespace(files):
         for idx, line in enumerate(content.splitlines()):
             if r.search(line):
                 output.append('%s:%d: trailing whitespace' % (filename, idx + 1))
-    return "\n".join(output)
+    return '\n'.join(output)
 
 
 def _main():
