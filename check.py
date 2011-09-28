@@ -46,14 +46,8 @@ def checker(include='*', exclude=''):
             files = fnmatch.filter(files, include)
             files = [f for f in files if not fnmatch.fnmatch(f, exclude)]
             if not files:
-                return
-            with captured_output() as stream:
-                func(files)
-                stream.seek(0)
-                output = stream.read()
-            if output.strip():
-                print '*' * 5, func.__name__, '*' * (43 - len(func.__name__))
-                print output
+                return ""
+            return func(files).strip()
         checkers.append(helper)
         return helper
     return decorator
@@ -81,27 +75,31 @@ def interesting_files(vcs):
 
 def call(seq):
     """Use Popen to execute `seq` and return stdout."""
-    return subprocess.Popen(seq, stdout=subprocess.PIPE).communicate()[0]
+    return subprocess.Popen(seq,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT).communicate()[0]
 
 
 @checker('*.py')
 def pyflakes(files):
-    print call(['pyflakes'] + files)
+    return call(['pyflakes'] + files)
 
 
 @checker('*.py')
 def pep8(files):
-    print call(['pep8', '--repeat'] + files)
+    return call(['pep8', '--repeat'] + files)
 
 
 @checker(exclude='*.py')
 def trailing_whitespace(files):
+    output = []
     r = re.compile('\s+$')
     for filename in files:
         content = open(filename).read()
         for idx, line in enumerate(content.splitlines()):
             if r.search(line):
-                print '%s:%d: trailing whitespace' % (filename, idx + 1)
+                output.append('%s:%d: trailing whitespace' % (filename, idx + 1))
+    return '\n'.join(output)
 
 
 @checker('*.js')
@@ -128,8 +126,14 @@ def _main():
                         files.append(f)
 
     files = filter(os.path.isfile, set(files))
+    exitcode = 0
     for checker in checkers:
-        checker(files)
+        ret = checker(files)
+        print ret
+        if ret:
+            exitcode = 1
+
+    return exitcode
 
 if __name__ == '__main__':
-    _main()
+    sys.exit(_main())

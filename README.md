@@ -22,3 +22,20 @@ Best installed with pip or easy_install so you also get the pyflakes dependency.
 The easiest way to get jshint installed is via npm:
 
     npm install -g jshint
+
+#### Use as a git pre-commit hook
+
+This is useful as a git pre-commit hook.  For example, this would go in your
+`.git/hooks/pre-commit` script:
+
+    #!/bin/sh
+
+    check.py
+    if [ "$?" -ne "0" ]
+    then
+        echo "Aborting commit.  Fix above errors or do 'git commit --no-verify'."
+        exit 1
+    fi
+
+Make sure your `pre-commit` file is executable and that `check.py` are on
+your `PATH`.
