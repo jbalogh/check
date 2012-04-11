@@ -38,13 +38,15 @@ def captured_output():
 
 
 checkers = []
-def checker(include='*', exclude=''):
+def checker(include='*', excludes=[]):
     """Decorator to register `func` in `checkers` and normalize output."""
     def decorator(func):
         @functools.wraps(func)
         def helper(files):
             files = fnmatch.filter(files, include)
-            files = [f for f in files if not fnmatch.fnmatch(f, exclude)]
+            for expattern in excludes:
+                files = [f for f in files
+                         if not fnmatch.fnmatch(f, expattern)]
             if not files:
                 return ""
             return func(files).strip()
@@ -90,7 +92,7 @@ def pep8(files):
     return call(['pep8', '--repeat'] + files)
 
 
-@checker(exclude='*.py')
+@checker(excludes=['*.py', '*.json'])
 def trailing_whitespace(files):
     output = []
     r = re.compile('\s+$')
