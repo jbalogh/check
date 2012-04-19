@@ -107,9 +107,10 @@ def trailing_whitespace(files):
 @checker('*.js')
 def jshint(files):
     try:
-        print call(['jshint'] + files)
+        return call(['jshint'] + files)
     except OSError:
         print 'jshint not installed for js checking'
+        return ''
 
 
 def _main():
