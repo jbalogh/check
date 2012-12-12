@@ -132,8 +132,8 @@ def _main():
     exitcode = 0
     for checker in checkers:
         ret = checker(files)
-        print ret
         if ret:
+            print ret
             exitcode = 1
 
     return exitcode
