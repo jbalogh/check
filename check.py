@@ -16,7 +16,7 @@ from path import path
 VCS = {'svn': "^(?:A|M)\s+" # Find Added or Modified files.
               "(.*)$",      # Store the rest of the line (the filepath).
 
-       'git': "^#\s+"     # The line starts with an octothorpe and whitespace.
+       'git': "^#?\s+"     # The line starts with an octothorpe and whitespace.
               "(?:new file|modified):\s+"  # Look for new/modified files.
               "(.*)$",    #  Store the rest of the line (the filepath).
        }
